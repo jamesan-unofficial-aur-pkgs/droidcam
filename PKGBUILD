@@ -1,9 +1,9 @@
-# Maintainer: AwesomeHaircut <jesusbalbastro at gmail com>
+# Maintainer: James An <james@jamesan.ca>
+# Contributor: AwesomeHaircut <jesusbalbastro at gmail com>
 
 pkgname=droidcam
 pkgver=6.0
-pkgrel=3
-_kver="`uname -r | cut -d"." -f1,2`-ARCH"
+pkgrel=4
 pkgdesc='A tool for using your android device as a wireless/usb webcam'
 arch=('x86_64')
 url='http://www.dev47apps.com/'
@@ -15,21 +15,19 @@ optdepends=('v4l-utils: Userspace tools and conversion library for Video 4 Linux
             'xf86-video-v4l: X.org v4l video driver' )
 install="$pkgname.install"
 
-source=("$pkgname.desktop" )
-
-sha1sums=( 'f85b3f34f98908bd1327df0ea0e650dcbdcb07e9')
-
-## as of 2015-11-11 only x64 is available for 6.0
-[[ "${CARCH}" = "x86_64" ]] && _arch="x64" && sha1sums+=('0c1d6c7b0298e5ec935aa1a93a80529d8a02c9a9')
-
-source+=("http://files.dev47apps.net/600/droidcam-v4l2-${_arch}.tar.gz")
+source=("$pkgname.desktop"
+        "https://github.com/aramg/$pkgname/raw/master/linux/icon2.png"
+        "https://www.dev47apps.com/files/600/$pkgname-64bit.tar.bz2")
+md5sums=('199d8f3dbc6697f06350b00de99f2274'
+         '0f0e1d04146dd5be70d5028f144bd0a2'
+         '743b71f1af4d90b5ced59c02fcbc925f')
 
 package() {
   # Install droidcam binary file
-  cd $pkgdir
+  cd $pkgname-64bit
   mkdir -p "$pkgdir"/usr/bin
-  install -m755 "$srcdir"/${pkgname} "$pkgdir"/usr/bin/${pkgname}
-  install -m755 "$srcdir"/${pkgname}-cli "$pkgdir"/usr/bin/${pkgname}-cli
+  install -m755 ${pkgname} "$pkgdir"/usr/bin/${pkgname}
+  install -m755 ${pkgname}-cli "$pkgdir"/usr/bin/${pkgname}-cli
 
   # Install the desktop icon and ".desktop" files
   install -dm0755 "${pkgdir}/usr/share/"{applications,pixmaps}
@@ -46,11 +44,11 @@ package() {
 
   # Install doc
   install -dm0755 "${pkgdir}/usr/share/licenses/${pkgname}"
-  install -m0644 "${srcdir}/README" "${pkgdir}/usr/share/licenses/$pkgname/README"
+  install -m0644 README "${pkgdir}/usr/share/licenses/$pkgname/README"
 
   # Install modules
-  cd $srcdir/v4l2loopback
-  sed -i -e "s,vdev->current_norm,//vdev->current_norm,g" "$srcdir"/v4l2loopback/*.c
+  cd v4l2loopback
+  sed -i -e "s,vdev->current_norm,//vdev->current_norm,g" *.c
   make
   _extramodules="extramodules-$(uname -r | cut -f-2 -d'.')-$(uname -r|sed -e 's/.*-//g')"
   MODPATH="${pkgdir}/usr/lib/modules/${_extramodules}/"
