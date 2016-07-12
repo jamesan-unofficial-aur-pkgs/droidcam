@@ -48,27 +48,26 @@ build() {
 }
 
 package() {
+  cd "$pkgname"
+
   # Install droidcam binary file
-  cd $pkgname
-  mkdir -p "$pkgdir"/usr/bin
-  install -m755 ${pkgname} "$pkgdir"/usr/bin/${pkgname}
-  install -m755 ${pkgname}-cli "$pkgdir"/usr/bin/${pkgname}-cli
+  install -Dm755 "$pkgname" "$pkgdir/usr/bin/$pkgname"
+  install -Dm755 "$pkgname-cli" "$pkgdir/usr/bin/$pkgname-cli"
 
   # Install the desktop icon and ".desktop" files
-  install -dm0755 "${pkgdir}/usr/share/"{applications,pixmaps}
-  install -m0644 "${srcdir}/icon2.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
-  install -m0644 "${srcdir}/${pkgname}.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+  install -Dm644 ../icon2.png "$pkgdir/usr/share/pixmaps/$pkgname.png"
+  install -Dm644 "../$pkgname.desktop" "$pkgdir/usr/share/applications/$pkgname.desktop"
 
-  install -Dm644 "${srcdir}/$pkgname.modules-load.conf" "$pkgdir/usr/lib/modules-load.d/$pkgname.conf"
-  install -Dm644 "${srcdir}/$pkgname.modprobe.conf"     "$pkgdir/etc/modprobe.d/$pkgname.conf"
+  # Install module config files
+  install -Dm644 "$pkgname.modules-load.conf" "$pkgdir/usr/lib/modules-load.d/$pkgname.conf"
+  install -Dm644 "$pkgname.modprobe.conf"     "$pkgdir/etc/modprobe.d/$pkgname.conf"
 
   # Install doc
-  install -dm0755 "${pkgdir}/usr/share/licenses/${pkgname}"
-  install -m0644 README "${pkgdir}/usr/share/licenses/$pkgname/README"
+  install -Dm644 README "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
   # Install kernel module
   cd v4l2loopback
-  _extramodules="extramodules-$(uname -r | cut -f-2 -d'.')-$(uname -r|sed -e 's/.*-//g')"
-  MODPATH="${pkgdir}/usr/lib/modules/${_extramodules}/"
-  install -Dm644 v4l2loopback-dc.ko.gz "$MODPATH/v4l2loopback_dc.ko.gz"
+  _extramodules="extramodules-$(uname -r | sed 's/\.[0-9]\+-[0-9]\+//')"
+  MODPATH="/usr/lib/modules/$_extramodules"
+  install -Dm644 v4l2loopback-dc.ko.gz "$pkgdir$MODPATH/v4l2loopback_dc.ko.gz"
 }
