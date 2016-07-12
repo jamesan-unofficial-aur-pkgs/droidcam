@@ -3,7 +3,7 @@
 
 pkgname=droidcam
 pkgver=6.0
-pkgrel=4
+pkgrel=5
 pkgdesc='A tool for using your android device as a wireless/usb webcam'
 arch=('x86_64')
 url='http://www.dev47apps.com/'
@@ -21,6 +21,14 @@ source=("$pkgname.desktop"
 md5sums=('199d8f3dbc6697f06350b00de99f2274'
          '0f0e1d04146dd5be70d5028f144bd0a2'
          '743b71f1af4d90b5ced59c02fcbc925f')
+
+build() {
+  cd "$pkgname-64bit/v4l2loopback"
+  # Build kernel module
+  sed -i -e "s,vdev->current_norm,//vdev->current_norm,g" *.c
+  make
+  gzip -f v4l2loopback-dc.ko
+}
 
 package() {
   # Install droidcam binary file
@@ -46,11 +54,9 @@ package() {
   install -dm0755 "${pkgdir}/usr/share/licenses/${pkgname}"
   install -m0644 README "${pkgdir}/usr/share/licenses/$pkgname/README"
 
-  # Install modules
+  # Install kernel module
   cd v4l2loopback
-  sed -i -e "s,vdev->current_norm,//vdev->current_norm,g" *.c
-  make
   _extramodules="extramodules-$(uname -r | cut -f-2 -d'.')-$(uname -r|sed -e 's/.*-//g')"
   MODPATH="${pkgdir}/usr/lib/modules/${_extramodules}/"
-  install -Dm644 v4l2loopback-dc.ko "$MODPATH/v4l2loopback_dc.ko"
+  install -Dm644 v4l2loopback-dc.ko.gz "$MODPATH/v4l2loopback_dc.ko.gz"
 }
