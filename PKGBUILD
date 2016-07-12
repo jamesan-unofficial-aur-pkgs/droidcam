@@ -3,9 +3,9 @@
 
 pkgname=droidcam
 pkgver=6.0
-pkgrel=6
+pkgrel=7
 pkgdesc='A tool for using your android device as a wireless/usb webcam'
-arch=('x86_64')
+arch=('i686' 'x86_64')
 url='http://www.dev47apps.com/'
 license=('custom')
 depends=( 'bluez-libs' 'gtk2')
@@ -16,13 +16,20 @@ optdepends=('v4l-utils: Userspace tools and conversion library for Video 4 Linux
 install="$pkgname.install"
 
 source=("$pkgname.desktop"
-        "https://github.com/aramg/$pkgname/raw/master/linux/icon2.png"
-        "https://www.dev47apps.com/files/600/$pkgname-64bit.tar.bz2")
+        "https://github.com/aramg/$pkgname/raw/master/linux/icon2.png")
+source_i686=("$pkgname.tar.bz2"::"https://www.dev47apps.com/files/600/$pkgname-32bit.tar.bz2")
+source_x86_64=("$pkgname.tar.bz2"::"https://www.dev47apps.com/files/600/$pkgname-64bit.tar.bz2")
 md5sums=('199d8f3dbc6697f06350b00de99f2274'
-         '0f0e1d04146dd5be70d5028f144bd0a2'
-         '743b71f1af4d90b5ced59c02fcbc925f')
+         '0f0e1d04146dd5be70d5028f144bd0a2')
+md5sums_i686=('b4b4bb43a4e4a46aab2c1b38cd0892c3')
+md5sums_x86_64=('743b71f1af4d90b5ced59c02fcbc925f')
+noextract=("$pkgname.tar.bz2")
 
 prepare() {
+  # Extract source from within leading arcqh-specific folder
+  tar --transform='s/-\(32\|64\)bit//' --show-transformed-names -xjf "$pkgname.tar.bz2"
+  cd "$pkgname"
+
   # Generate the module loading configuration files
   cat <<EOF >| "$pkgname.modules-load.conf"
 videodev
@@ -33,7 +40,7 @@ EOF
 }
 
 build() {
-  cd "$pkgname-64bit/v4l2loopback"
+  cd "$pkgname/v4l2loopback"
   # Build kernel module
   sed -i -e "s,vdev->current_norm,//vdev->current_norm,g" *.c
   make
@@ -42,7 +49,7 @@ build() {
 
 package() {
   # Install droidcam binary file
-  cd $pkgname-64bit
+  cd $pkgname
   mkdir -p "$pkgdir"/usr/bin
   install -m755 ${pkgname} "$pkgdir"/usr/bin/${pkgname}
   install -m755 ${pkgname}-cli "$pkgdir"/usr/bin/${pkgname}-cli
