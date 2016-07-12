@@ -3,7 +3,7 @@
 
 pkgname=droidcam
 pkgver=6.0
-pkgrel=5
+pkgrel=6
 pkgdesc='A tool for using your android device as a wireless/usb webcam'
 arch=('x86_64')
 url='http://www.dev47apps.com/'
@@ -21,6 +21,16 @@ source=("$pkgname.desktop"
 md5sums=('199d8f3dbc6697f06350b00de99f2274'
          '0f0e1d04146dd5be70d5028f144bd0a2'
          '743b71f1af4d90b5ced59c02fcbc925f')
+
+prepare() {
+  # Generate the module loading configuration files
+  cat <<EOF >| "$pkgname.modules-load.conf"
+videodev
+v4l2loopback
+v4l2loopback_dc
+EOF
+  echo "options v4l2loopback_dc width=320 height=240" >| "$pkgname.modprobe.conf"
+}
 
 build() {
   cd "$pkgname-64bit/v4l2loopback"
@@ -42,13 +52,8 @@ package() {
   install -m0644 "${srcdir}/icon2.png" "${pkgdir}/usr/share/pixmaps/${pkgname}.png"
   install -m0644 "${srcdir}/${pkgname}.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
 
-  mkdir -p "$pkgdir"/usr/lib/modules-load.d/
-  printf "videodev\nv4l2loopback\nv4l2loopback_dc" \
-         > "$pkgdir"/usr/lib/modules-load.d/droidcam.conf
-
-  mkdir -p "$pkgdir"/etc/modprobe.d/
-  printf "options v4l2loopback_dc width=320 height=240" \
-         > "$pkgdir"/etc/modprobe.d/droidcam.conf
+  install -Dm644 "${srcdir}/$pkgname.modules-load.conf" "$pkgdir/usr/lib/modules-load.d/$pkgname.conf"
+  install -Dm644 "${srcdir}/$pkgname.modprobe.conf"     "$pkgdir/etc/modprobe.d/$pkgname.conf"
 
   # Install doc
   install -dm0755 "${pkgdir}/usr/share/licenses/${pkgname}"

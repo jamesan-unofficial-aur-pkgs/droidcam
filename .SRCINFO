@@ -1,7 +1,7 @@
 pkgbase = droidcam
 	pkgdesc = A tool for using your android device as a wireless/usb webcam
 	pkgver = 6.0
-	pkgrel = 5
+	pkgrel = 6
 	url = http://www.dev47apps.com/
 	install = droidcam.install
 	arch = x86_64
